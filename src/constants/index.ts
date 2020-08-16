@@ -1,4 +1,4 @@
-export const colours = {
+export const COLOURS = {
   white: {
     string: '#ffffff',
     number: 0xffffff
@@ -12,3 +12,18 @@ export const colours = {
     number: 0x4B2A3C,
   }
 }
+
+export const SIDE_UP = 0;
+export const SIDE_RIGHT = 1;
+export const SIDE_DOWN = 2;
+export const SIDE_LEFT = 3
+
+
+export const TOP_LEFT = 19;
+export const TOP = 20;
+export const TOP_RIGHT = 21;
+export const LEFT = 67;
+export const RIGHT = 69;
+export const BOTTOM_LEFT = 115;
+export const BOTTOM = 116;
+export const BOTTOM_RIGHT = 117;

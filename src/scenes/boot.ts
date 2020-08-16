@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { colours } from '../constants';
+import { COLOURS } from '../constants';
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
   active: false,
@@ -18,7 +18,7 @@ export class BootScene extends Phaser.Scene {
      */     
     const progressBar = this.add.graphics();
     const progressBox = this.add.graphics();
-    progressBox.fillStyle(colours.darkGray.number, 0.8);
+    progressBox.fillStyle(COLOURS.darkGray.number, 0.8);
     progressBox.fillRect(240, 270, 320, 50);
     
     /**    
@@ -31,14 +31,14 @@ export class BootScene extends Phaser.Scene {
       text: 'Loading...',
       style: {
         font: '20px monospace',
-        fill: colours.white.string
+        fill: COLOURS.white.string
       }
     });
     loadingText.setOrigin(0.5, 0.5);
     
     this.load.on('progress', (value: number) => {
       progressBar.clear();
-      progressBar.fillStyle(colours.white.number, 1);
+      progressBar.fillStyle(COLOURS.white.number, 1);
       progressBar.fillRect(250, 280, 300 * value, 30);
     });
     this.load.on('fileprogress', (file: File) => {
