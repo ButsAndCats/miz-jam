@@ -9,7 +9,6 @@ const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
 };
 
 export class GameScene extends Phaser.Scene {
-  [x: string]: Phaser.Tilemaps.StaticTilemapLayer;
   map: Phaser.Tilemaps.Tilemap;
   tiles: Phaser.Tilemaps.Tileset;
   groundLayer: Phaser.Tilemaps.StaticTilemapLayer;
@@ -23,11 +22,14 @@ export class GameScene extends Phaser.Scene {
   isFlipped: boolean;
   bgLayer: Phaser.Tilemaps.StaticTilemapLayer;
   spikesLayer: Phaser.Tilemaps.StaticTilemapLayer;
+  isDead: boolean;
+  actionsLayer: Phaser.Tilemaps.StaticTilemapLayer;
   constructor() {
     super(sceneConfig);
   }
 
   public preload() {
+    this.isDead = false;
     /**    
      * Use these to control the speed and gravity of the player    
      */     
@@ -69,6 +71,7 @@ export class GameScene extends Phaser.Scene {
      * Tiles 1 and 0 are the background/ blank tiles.     
      */
     this.groundLayer.setCollisionByExclusion([0, 1]);
+    // this.spikesLayer.setCollisionByExclusion([0, 1]);
     
     /**    
      * The tiles will probably go all the way around the edge of the map to
@@ -94,6 +97,9 @@ export class GameScene extends Phaser.Scene {
      */     
     this.player.setCollideWorldBounds(true);
     this.physics.add.collider(this.player, this.groundLayer, (player, layer) => {
+      if (this.isDead) {
+        return
+      }
       if (!this.rotating) {
         if (this.cursors.left.isDown && !this.cursors.right.isDown) {
           if (!this.isFlipped) {
@@ -120,6 +126,14 @@ export class GameScene extends Phaser.Scene {
       }
     })
     
+    this.physics.add.overlap(this.player, this.spikesLayer, (player, tile) => {
+      if (tile.index !== 1) {
+        this.isDead = true
+        player.body.setVelocity(-player.body.velocity.x, -player.body.velocity.y);
+        player.setFrame(407)
+      }
+    })
+    
     // Define the arrow keys
     this.cursors = this.input.keyboard.createCursorKeys();
     
@@ -139,7 +153,10 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.setZoom(2);
   }
   
-  public update() {    
+  public update() {   
+    if (this.isDead) {
+      return
+    }
     if (this.cursors.up.isDown) {
       this.jump();
     }
@@ -329,6 +346,9 @@ export class GameScene extends Phaser.Scene {
   }
   
   public flip() {
+    if (this.isDead) {
+      return
+    }
     if (this.canFlipGravity) {
       this.canFlipGravity = false;
       if (this.direction === 0 || this.direction === 2) {
