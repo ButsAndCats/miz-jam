@@ -29,3 +29,8 @@ export const BOTTOM = 116;
 export const BOTTOM_RIGHT = 117;
 
 export const START_DOOR = 489;
+
+export const UP_SPIKE = 23;
+export const DOWN_SPIKE = 25;
+export const LEFT_SPIKE = 74;
+export const RIGHT_SPIKE = 73;

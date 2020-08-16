@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { SIDE_UP, SIDE_RIGHT, SIDE_DOWN, SIDE_LEFT, TOP_LEFT, TOP, TOP_RIGHT, BOTTOM_RIGHT, BOTTOM_LEFT, LEFT, BOTTOM, RIGHT, START_DOOR } from '../constants';
+import { SIDE_UP, SIDE_RIGHT, SIDE_DOWN, SIDE_LEFT, TOP_LEFT, TOP, TOP_RIGHT, BOTTOM_RIGHT, BOTTOM_LEFT, LEFT, BOTTOM, RIGHT, START_DOOR, DOWN_SPIKE, UP_SPIKE, LEFT_SPIKE, RIGHT_SPIKE } from '../constants';
  
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
@@ -35,9 +35,9 @@ export class GameScene extends Phaser.Scene {
      */     
     this.config = {
       gravity: 1200,
-      speed: 100,
+      speed: 130,
       gravityDirection: 1,
-      jumpForce: 250,
+      jumpForce: 255,
     }
     
     /**    
@@ -127,11 +127,34 @@ export class GameScene extends Phaser.Scene {
     })
     
     this.physics.add.overlap(this.player, this.spikesLayer, (player, tile) => {
-      if (tile.index !== 1) {
-        this.isDead = true
-        player.body.setVelocity(-player.body.velocity.x, -player.body.velocity.y);
-        player.setFrame(407)
+      this.isDead = true
+      player.body.setVelocity(- (player.body.velocity.x / 2), - (player.body.velocity.y / 2));
+      player.setFrame(407)
+    }, (player, tile) => {
+      if (tile.index === 1 || this.isDead) {
+        return false
       }
+      if (tile.index === UP_SPIKE) {
+        if (player.y > tile.pixelY - 4 && player.x >= tile.pixelX - 5) {
+          return true
+        }
+      }
+      if (tile.index === DOWN_SPIKE) {
+        if (player.y < tile.pixelY + 15 && player.x >= tile.pixelX - 5) {
+          return true
+        }
+      }
+      if (tile.index === LEFT_SPIKE) {
+        if (player.x >= tile.pixelX + 5) {
+          return true
+        }
+      }
+      if (tile.index === RIGHT_SPIKE) {
+        if (player.x <= tile.pixelX + 14) {
+          return true
+        }
+      }
+      return false
     })
     
     // Define the arrow keys
