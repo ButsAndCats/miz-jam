@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { SIDE_UP, SIDE_RIGHT, SIDE_DOWN, SIDE_LEFT, TOP_LEFT, TOP, TOP_RIGHT, BOTTOM_RIGHT, BOTTOM_LEFT, LEFT, BOTTOM, RIGHT } from '../constants';
+import { SIDE_UP, SIDE_RIGHT, SIDE_DOWN, SIDE_LEFT, TOP_LEFT, TOP, TOP_RIGHT, BOTTOM_RIGHT, BOTTOM_LEFT, LEFT, BOTTOM, RIGHT, START_DOOR } from '../constants';
  
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
@@ -9,6 +9,7 @@ const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
 };
 
 export class GameScene extends Phaser.Scene {
+  [x: string]: Phaser.Tilemaps.StaticTilemapLayer;
   map: Phaser.Tilemaps.Tilemap;
   tiles: Phaser.Tilemaps.Tileset;
   groundLayer: Phaser.Tilemaps.StaticTilemapLayer;
@@ -82,8 +83,9 @@ export class GameScene extends Phaser.Scene {
     /**    
      * Create a new sprite and add it to the physics of the scene. 
      * We then set the vertical gravity of the sprite so that it falls.  
-     */     
-    this.player = this.physics.add.sprite(256, 128, 'tiles', 403);
+     */   
+    const startTile = this.actionsLayer.findByIndex(START_DOOR);
+    this.player = this.physics.add.sprite(startTile.pixelX + 8, startTile.pixelY, 'tiles', 403);
     this.player.setOrigin(0.5, 0.5)
     this.player.body.gravity.set(0, this.config.gravity);
     

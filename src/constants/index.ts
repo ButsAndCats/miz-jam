@@ -27,3 +27,5 @@ export const RIGHT = 69;
 export const BOTTOM_LEFT = 115;
 export const BOTTOM = 116;
 export const BOTTOM_RIGHT = 117;
+
+export const START_DOOR = 489;
