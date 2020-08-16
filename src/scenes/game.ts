@@ -65,14 +65,18 @@ export class GameScene extends Phaser.Scene {
      * Create a new sprite and add it to the physics of the scene. 
      * We then set the vertical gravity of the sprite so that it falls.  
      */     
-    this.player = this.physics.add.sprite(200, 200, 'tiles', 403);
+    this.player = this.physics.add.sprite(32, 256, 'tiles', 403);
     this.player.body.gravity.set(0, this.config.playerGravity);
     
     /**    
      * Collide the player with the colidable tiles in the tilemap    
      */     
     this.player.setCollideWorldBounds(true);
-    this.physics.add.collider(this.player, this.groundLayer);
+    this.physics.add.collider(this.player, this.groundLayer, () => {
+      if (!this.canFlipGravity) {
+        this.canFlipGravity = true;
+      }
+    })
     
     // Define the arrow keys
     this.cursors = this.input.keyboard.createCursorKeys();
@@ -84,8 +88,7 @@ export class GameScene extends Phaser.Scene {
     const { SPACE } = Phaser.Input.Keyboard.KeyCodes;
     const spaceKey = this.input.keyboard.addKey(SPACE);
     spaceKey.on("down", () => {
-      console.log("down")
-      if (this.canFlipGravity){
+      if (this.canFlipGravity) {
         this.player.body.gravity.y *= -1;
         this.canFlipGravity = false;
         this.player.flipY = this.player.body.gravity.y < 0
@@ -106,7 +109,6 @@ export class GameScene extends Phaser.Scene {
     this.player.body.velocity.x = this.cursors.left.isDown ? (this.cursors.right.isDown ? 0 : -1 * this.config.playerSpeed) : (this.cursors.right.isDown ? this.config.playerSpeed : 0);
     // Flip the sprite along the X axis depending on it's horizontal movement.
     this.player.flipX = this.player.body.velocity.x == 0 ? this.player.flipX : (this.player.body.velocity.x > 0 ? false : true);
-    
   }
 }
 
