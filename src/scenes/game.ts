@@ -20,6 +20,8 @@ export class GameScene extends Phaser.Scene {
   rotating: boolean;
   direction: 0 | 1 | 2 | 3;
   isFlipped: boolean;
+  bgLayer: Phaser.Tilemaps.StaticTilemapLayer;
+  spikesLayer: Phaser.Tilemaps.StaticTilemapLayer;
   constructor() {
     super(sceneConfig);
   }
@@ -56,7 +58,10 @@ export class GameScene extends Phaser.Scene {
      */     
     this.map = this.make.tilemap({ key: 'map' });
     this.tiles = this.map.addTilesetImage('tiles');
+    this.bgLayer = this.map.createStaticLayer('Background', this.tiles)
     this.groundLayer = this.map.createStaticLayer('Ground', this.tiles)
+    this.spikesLayer = this.map.createStaticLayer('Spikes', this.tiles)
+    this.actionsLayer = this.map.createStaticLayer('Actions', this.tiles)
     
     /**    
      * Set the ground layer to be have any tiles with index 1 or 0 not be colidable.
@@ -89,10 +94,19 @@ export class GameScene extends Phaser.Scene {
     this.physics.add.collider(this.player, this.groundLayer, (player, layer) => {
       if (!this.rotating) {
         if (this.cursors.left.isDown && !this.cursors.right.isDown) {
-          this.moveCounterClockwise();
+          if (!this.isFlipped) {
+            this.moveCounterClockwise();
+          } else {
+            this.moveClockwise();
+          }
+          
         } else {
           if (this.cursors.right.isDown && !this.cursors.left.isDown) {
-            this.moveClockwise();
+            if (this.isFlipped) {
+              this.moveCounterClockwise();
+            } else {
+              this.moveClockwise();
+            }
           } else {
             this.stopMoving()
           }
@@ -120,6 +134,7 @@ export class GameScene extends Phaser.Scene {
      */     
     this.cameras.main.setBounds(0, 0, 1920, 1440);
     this.cameras.main.startFollow(this.player);
+    this.cameras.main.setZoom(2);
   }
   
   public update() {    
@@ -321,7 +336,7 @@ export class GameScene extends Phaser.Scene {
         this.player.body.gravity.x *= -1;
         this.player.body.gravity.y = 0
       }
-      this.player.flipY = this.isFlipped
+      this.player.flipY = !this.isFlipped
       const directions: Array<0 | 1 | 2 | 3> = [2, 3, 0, 1]
       this.direction = directions[this.direction]
       this.isFlipped = !this.isFlipped

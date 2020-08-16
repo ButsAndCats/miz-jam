@@ -4,6 +4,7 @@ import Scenes from 'scenes';
 const config: Phaser.Types.Core.GameConfig = {
   title: 'Miz jam',
   type: Phaser.AUTO,
+  zoom: 2,
   scale: {
     parent: 'game',
     width: 800,
