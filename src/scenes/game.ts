@@ -128,7 +128,7 @@ export class GameScene extends Phaser.Scene {
     
     this.physics.add.overlap(this.player, this.spikesLayer, (player, tile) => {
       this.isDead = true
-      player.body.setVelocity(- (player.body.velocity.x / 2), - (player.body.velocity.y / 2));
+      // player.body.setVelocity(- (player.body.velocity.x / 2), - (player.body.velocity.y / 2));
       player.setFrame(407)
     }, (player, tile) => {
       if (tile.index === 1 || this.isDead) {
