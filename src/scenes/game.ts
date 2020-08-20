@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { SIDE_UP, SIDE_RIGHT, SIDE_DOWN, SIDE_LEFT, TOP_LEFT, TOP, TOP_RIGHT, BOTTOM_RIGHT, BOTTOM_LEFT, LEFT, BOTTOM, RIGHT, START_DOOR, DOWN_SPIKE, UP_SPIKE, LEFT_SPIKE, RIGHT_SPIKE } from '../constants';
+import { SIDE_UP, SIDE_RIGHT, SIDE_DOWN, SIDE_LEFT, TOP_LEFT, TOP, TOP_RIGHT, BOTTOM_RIGHT, BOTTOM_LEFT, LEFT, BOTTOM, RIGHT, START_DOOR, DOWN_SPIKE, UP_SPIKE, LEFT_SPIKE, RIGHT_SPIKE, COLOURS, RED_KEY, BLANK, RED_DOOR_LOCKED, RED_DOOR_ENTRANCE, RED_DOOR_EXIT, YELLOW_KEY, YELLOW_DOOR_LOCKED, YELLOW_DOOR_ENTRANCE, YELLOW_DOOR_EXIT, BLUE_DOOR_EXIT, GREEN_DOOR_EXIT, BLUE_KEY, GREEN_DOOR_LOCKED, GREEN_DOOR_ENTRANCE, BLUE_DOOR_LOCKED, BLUE_DOOR_ENTRANCE, GREEN_KEY, DEAD, ALIVE } from '../constants';
  
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
@@ -23,7 +23,10 @@ export class GameScene extends Phaser.Scene {
   bgLayer: Phaser.Tilemaps.StaticTilemapLayer;
   spikesLayer: Phaser.Tilemaps.StaticTilemapLayer;
   isDead: boolean;
-  actionsLayer: Phaser.Tilemaps.StaticTilemapLayer;
+  actionsLayer: Phaser.Tilemaps.DynamicTilemapLayer;
+  items: any[];
+  relocating: boolean;
+  checkpoint: Phaser.Tilemaps.Tile;
   constructor() {
     super(sceneConfig);
   }
@@ -35,7 +38,7 @@ export class GameScene extends Phaser.Scene {
      */     
     this.config = {
       gravity: 1200,
-      speed: 130,
+      speed: 120,
       gravityDirection: 1,
       jumpForce: 255,
     }
@@ -52,9 +55,27 @@ export class GameScene extends Phaser.Scene {
      */     
     this.rotating = false;
     this.direction = SIDE_UP;
+    
+    
+    /**    
+     * We will use this value to define whether or not the use is moving between 2 doors.    
+     */     
+    this.relocating = false;
+    
+    /**    
+     * Any items that the player picks up will be stored in this array    
+     */     
+    this.items = [];
   }
   
   public create() {
+    const { SPACE, E } = Phaser.Input.Keyboard.KeyCodes;
+    // Define the arrow keys
+    this.cursors = this.input.keyboard.createCursorKeys();
+    // Define E key
+    const eKey = this.input.keyboard.addKey(E);
+    // Define spacebar key
+    const spaceKey = this.input.keyboard.addKey(SPACE);
     
     /**    
      * Create the map and the platform layer    
@@ -64,7 +85,7 @@ export class GameScene extends Phaser.Scene {
     this.bgLayer = this.map.createStaticLayer('Background', this.tiles)
     this.groundLayer = this.map.createStaticLayer('Ground', this.tiles)
     this.spikesLayer = this.map.createStaticLayer('Spikes', this.tiles)
-    this.actionsLayer = this.map.createStaticLayer('Actions', this.tiles)
+    this.actionsLayer = this.map.createDynamicLayer('Actions', this.tiles)
     
     /**    
      * Set the ground layer to be have any tiles with index 1 or 0 not be colidable.
@@ -87,8 +108,15 @@ export class GameScene extends Phaser.Scene {
      * Create a new sprite and add it to the physics of the scene. 
      * We then set the vertical gravity of the sprite so that it falls.  
      */   
-    const startTile = this.actionsLayer.findByIndex(START_DOOR);
-    this.player = this.physics.add.sprite(startTile.pixelX + 8, startTile.pixelY, 'tiles', 403);
+    const startTile = this.actionsLayer.findByIndex(START_DOOR);  
+    const redDoorExitTile = this.actionsLayer.findByIndex(RED_DOOR_EXIT);
+    const blueDoorExitTile = this.actionsLayer.findByIndex(BLUE_DOOR_EXIT);
+    const yellowDoorExitTile = this.actionsLayer.findByIndex(YELLOW_DOOR_EXIT);
+    const greenDoorExitTile = this.actionsLayer.findByIndex(GREEN_DOOR_EXIT);
+    
+    this.checkpoint = startTile;
+    
+    this.player = this.physics.add.sprite(startTile.pixelX + 8, startTile.pixelY + 5, 'tiles', ALIVE);
     this.player.setOrigin(0.5, 0.5)
     this.player.body.gravity.set(0, this.config.gravity);
     
@@ -96,42 +124,29 @@ export class GameScene extends Phaser.Scene {
      * Collide the player with the colidable tiles in the tilemap    
      */     
     this.player.setCollideWorldBounds(true);
-    this.physics.add.collider(this.player, this.groundLayer, (player, layer) => {
-      if (this.isDead) {
+    this.physics.add.collider(this.player, this.groundLayer, (player: GameScene['player'], tile: Phaser.Tilemaps.Tile) => {
+      if (this.isDead || this.relocating) {
         return
       }
       if (!this.rotating) {
-        if (this.cursors.left.isDown && !this.cursors.right.isDown) {
-          if (!this.isFlipped) {
-            this.moveCounterClockwise();
-          } else {
-            this.moveClockwise();
-          }
-          
-        } else {
-          if (this.cursors.right.isDown && !this.cursors.left.isDown) {
-            if (this.isFlipped) {
-              this.moveCounterClockwise();
-            } else {
-              this.moveClockwise();
-            }
-          } else {
-            this.stopMoving()
-          }
-        }
-        this.checkRotation(layer, player);
+        this.checkRotation(tile, player);
       }
       if (!this.canFlipGravity) {
         this.canFlipGravity = true;
       }
     })
     
-    this.physics.add.overlap(this.player, this.spikesLayer, (player, tile) => {
+    this.physics.add.overlap(this.player, this.spikesLayer, (player: GameScene['player'], tile: Phaser.Tilemaps.Tile) => {
+      if (this.isDead || this.relocating) {
+        return false
+      }
       this.isDead = true
-      // player.body.setVelocity(- (player.body.velocity.x / 2), - (player.body.velocity.y / 2));
-      player.setFrame(407)
+      console.log("DEAD")
+      player.setFrame(DEAD)
+      // revive this player
+      this.revive()
     }, (player, tile) => {
-      if (tile.index === 1 || this.isDead) {
+      if (tile.index === 1 || this.isDead || this.relocating) {
         return false
       }
       if (tile.index === UP_SPIKE) {
@@ -157,31 +172,125 @@ export class GameScene extends Phaser.Scene {
       return false
     })
     
-    // Define the arrow keys
-    this.cursors = this.input.keyboard.createCursorKeys();
     
+    /**    
+     * Fired when the player overlaps with the action tiles: doors and keys etc    
+     */     
+    this.physics.add.overlap(this.player, this.actionsLayer, (_player, tile) => {
+      const actions = {
+        [RED_KEY]: (tile: Phaser.Tilemaps.Tile) => {
+          this.pickupItem(RED_KEY, tile)
+        },
+        [YELLOW_KEY]: (tile: Phaser.Tilemaps.Tile) => {
+          this.pickupItem(YELLOW_KEY, tile)
+        },
+        [BLUE_KEY]: (tile: Phaser.Tilemaps.Tile) => {
+          this.pickupItem(BLUE_KEY, tile)
+        },
+        [GREEN_KEY]: (tile: Phaser.Tilemaps.Tile) => {
+          this.pickupItem(GREEN_KEY, tile)
+        },
+        [RED_DOOR_LOCKED]: (tile: Phaser.Tilemaps.Tile) => {
+          if (this.items.includes(RED_KEY)) {
+            this.actionsLayer.putTileAt(RED_DOOR_ENTRANCE, tile.x, tile.y)
+          }
+        },
+        [RED_DOOR_ENTRANCE]: (tile: Phaser.Tilemaps.Tile) => {
+          this.relocate(redDoorExitTile);
+        },
+        [RED_DOOR_EXIT]: (tile: Phaser.Tilemaps.Tile) => {
+          // Find the tile here because it may not exist at the start of the game
+          const redDoorEntranceTile = this.actionsLayer.findByIndex(RED_DOOR_ENTRANCE);
+          this.relocate(redDoorEntranceTile);
+        },
+        [YELLOW_DOOR_LOCKED]: (tile: Phaser.Tilemaps.Tile) => {
+          if (this.items.includes(YELLOW_KEY)) {
+            this.actionsLayer.putTileAt(YELLOW_DOOR_ENTRANCE, tile.x, tile.y)
+          }
+        },
+        [YELLOW_DOOR_ENTRANCE]: (tile: Phaser.Tilemaps.Tile) => {
+          this.relocate(yellowDoorExitTile);
+        },
+        [YELLOW_DOOR_EXIT]: (tile: Phaser.Tilemaps.Tile) => {
+          // Find the tile here because it may not exist at the start of the game
+          const yellowDoorEntranceTile = this.actionsLayer.findByIndex(YELLOW_DOOR_ENTRANCE);
+          this.relocate(yellowDoorEntranceTile);
+        },
+        [GREEN_DOOR_LOCKED]: (tile: Phaser.Tilemaps.Tile) => {
+          if (this.items.includes(GREEN_KEY)) {
+            this.actionsLayer.putTileAt(GREEN_DOOR_ENTRANCE, tile.x, tile.y)
+          }
+        },
+        [GREEN_DOOR_ENTRANCE]: (tile: Phaser.Tilemaps.Tile) => {
+          this.events.emit('completed');
+        },
+        [BLUE_DOOR_LOCKED]: (tile: Phaser.Tilemaps.Tile) => {
+          if (this.items.includes(BLUE_KEY)) {
+            this.actionsLayer.putTileAt(BLUE_DOOR_ENTRANCE, tile.x, tile.y)
+          }
+        },
+        [BLUE_DOOR_ENTRANCE]: (tile: Phaser.Tilemaps.Tile) => {
+          this.relocate(blueDoorExitTile);
+        },
+        [BLUE_DOOR_EXIT]: (tile: Phaser.Tilemaps.Tile) => {
+          // Find the tile here because it may not exist at the start of the game
+          const blueDoorEntranceTile = this.actionsLayer.findByIndex(BLUE_DOOR_ENTRANCE);
+          console.log(BLUE_DOOR_ENTRANCE)
+          console.log(blueDoorEntranceTile)
+          this.relocate(blueDoorEntranceTile);
+        }
+      }
+      actions[tile.index](tile)
+      
+    }, (_player, { index }: Phaser.Tilemaps.Tile) => {
+      if (this.isDead || this.relocating) {
+        return false
+      }
+      if (!eKey.isDown) {
+        return false
+      }
+      // A list of the interactible tiles
+      const actions = [RED_KEY, YELLOW_KEY, BLUE_KEY, GREEN_KEY, RED_DOOR_LOCKED, RED_DOOR_ENTRANCE, RED_DOOR_EXIT, YELLOW_DOOR_LOCKED, YELLOW_DOOR_ENTRANCE, YELLOW_DOOR_EXIT, BLUE_DOOR_LOCKED, BLUE_DOOR_ENTRANCE, BLUE_DOOR_EXIT, GREEN_DOOR_LOCKED, GREEN_DOOR_ENTRANCE, GREEN_DOOR_EXIT];
+      return actions.includes(index)
+    })
     /**    
      * When the space key is pressed, if gravity can be flipped:
      * Flip it and invert the players gravity and disable gravity flipping until there is a collision with the ground.    
      */     
-    const { SPACE } = Phaser.Input.Keyboard.KeyCodes;
-    const spaceKey = this.input.keyboard.addKey(SPACE);
     spaceKey.on("down", () => this.flip());
     
     /**    
      * set the camera to not go out of the bounds but follow the player, keeping them in the center.    
      */     
-    this.cameras.main.setBounds(0, 0, 1920, 1440);
+    this.cameras.main.setBounds(0, 0, 800, 600);
     this.cameras.main.startFollow(this.player);
     this.cameras.main.setZoom(2);
   }
   
   public update() {   
-    if (this.isDead) {
+    if (this.isDead || this.relocating) {
       return
     }
     if (this.cursors.up.isDown) {
       this.jump();
+    }
+    if (this.cursors.left.isDown && !this.cursors.right.isDown) {
+      if (!this.isFlipped) {
+        this.moveCounterClockwise();
+      } else {
+        this.moveClockwise();
+      }
+      
+    } else {
+      if (this.cursors.right.isDown && !this.cursors.left.isDown) {
+        if (this.isFlipped) {
+          this.moveCounterClockwise();
+        } else {
+          this.moveClockwise();
+        }
+      } else {
+        this.stopMoving()
+      }
     }
   }
   
@@ -269,6 +378,7 @@ export class GameScene extends Phaser.Scene {
   
   private checkRotation({ index, ...tile}, {x, y ...player}) {
     if (this.rotating) return;
+    
     const directions = [
       () => {
         if (index === TOP_RIGHT && x >= tile.pixelX + 20 && player.body.velocity.x > 0) {
@@ -280,7 +390,7 @@ export class GameScene extends Phaser.Scene {
         if (index === RIGHT) {
           this.handleRotation(1, x, y)
         }
-        if (index === LEFT) {
+        if (index === LEFT || (index === TOP_RIGHT && player.body.velocity.x < 0)) {
           this.handleRotation(-1, x, y)
         }
       },
@@ -381,11 +491,84 @@ export class GameScene extends Phaser.Scene {
         this.player.body.gravity.x *= -1;
         this.player.body.gravity.y = 0
       }
-      this.player.flipY = !this.isFlipped
+      this.player.setFlipY(!this.isFlipped)
       const directions: Array<0 | 1 | 2 | 3> = [2, 3, 0, 1]
       this.direction = directions[this.direction]
       this.isFlipped = !this.isFlipped
     }
+  }
+  
+  private relocate(tile: Phaser.Tilemaps.Tile, callback?: (tile: Phaser.Tilemaps.Tile) => void, callback2?: (tile: Phaser.Tilemaps.Tile) => void) {
+    this.relocating = true;
+    this.tweens.add({
+      targets: [this.player],
+      alpha: {
+        from: 1,
+        to: 0
+      },
+      duration: 100,
+      onComplete: () => {
+        if (callback && typeof callback === 'function') {
+          callback(tile)
+        }
+        this.resetFlippage();
+        this.tweens.add({
+          targets: [this.player],
+          x: tile.pixelX + 8,
+          y: tile.pixelY,
+          onComplete: () => {
+            this.tweens.add({
+              targets: [this.player],
+              alpha: {
+                from: 0,
+                to: 1,
+              },
+              onComplete: () => {
+                this.relocating = false;
+                this.checkpoint = tile;
+                if (callback2 && typeof callback2 === 'function') {
+                  callback2(tile)
+                }
+              }
+            });
+          }
+        })
+      }
+    })
+  }
+  
+  private pickupItem(item: number, tile: Phaser.Tilemaps.Tile) {
+    this.actionsLayer.putTileAt(BLANK, tile.x, tile.y);
+    this.events.emit('pickup', item)
+    this.items.push(item)
+    this.checkpoint = tile;
+  }
+  
+  private revive() {
+    this.add.tween({
+      targets: [this.player],
+      duration: 1000,
+      onComplete: () => {
+        this.relocate(
+          this.checkpoint,
+          (tile: Phaser.Tilemaps.Tile) => {
+            this.player.setFrame(ALIVE);
+          },
+          (tile: Phaser.Tilemaps.Tile) => {
+            this.isDead = false;
+          }
+        )
+      }
+    })  
+  }
+  
+  private resetFlippage() {
+    this.direction = 0;
+    this.setGravity();
+    this.isFlipped = false;
+    this.player.setFlipX(false);
+    this.player.setFlipY(false);
+    this.player.setAngle(0);
   }
 }
 
