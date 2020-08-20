@@ -51,14 +51,14 @@ export class BootScene extends Phaser.Scene {
       progressBar.destroy();
       progressBox.destroy();
       loadingText.destroy();
-      // this.scene.start('Game');
-      this.scene.launch('Game').launch('HUD').stop();
+      this.scene.start('Title');
     });
     
     /**    
      * Load the assets    
      */     
-    this.load.tilemapTiledJSON('map', '../assets/level1.json');
+    this.load.tilemapTiledJSON('map0', '../assets/level0.json');
+    this.load.tilemapTiledJSON('map1', '../assets/level1.json');
     this.load.spritesheet('tiles', '../assets/tiles.png', { 
       frameWidth: 16,
       frameHeight: 16,

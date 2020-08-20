@@ -27,10 +27,17 @@ export class GameScene extends Phaser.Scene {
   items: any[];
   relocating: boolean;
   checkpoint: Phaser.Tilemaps.Tile;
+  level: number;
   constructor() {
     super(sceneConfig);
   }
-
+  
+  public init({ level }: {
+    level: number;
+  }) {
+    this.level = level;
+  }
+  
   public preload() {
     this.isDead = false;
     /**    
@@ -80,7 +87,7 @@ export class GameScene extends Phaser.Scene {
     /**    
      * Create the map and the platform layer    
      */     
-    this.map = this.make.tilemap({ key: 'map' });
+    this.map = this.make.tilemap({ key: `map${this.level}` });
     this.tiles = this.map.addTilesetImage('tiles');
     this.bgLayer = this.map.createStaticLayer('Background', this.tiles)
     this.groundLayer = this.map.createStaticLayer('Ground', this.tiles)
@@ -117,7 +124,6 @@ export class GameScene extends Phaser.Scene {
     this.player = this.physics.add.sprite(startTile.pixelX + 8, startTile.pixelY + 5, 'tiles', ALIVE);
     this.player.setOrigin(0.5, 0.5)
     this.player.body.gravity.set(0, this.config.gravity);
-    
     
     /**    
      * Create walking animations    
@@ -391,6 +397,7 @@ export class GameScene extends Phaser.Scene {
     
     const directions = [
       () => {
+        console.log(index)
         if (index === TOP_RIGHT && x >= tile.pixelX + 20 && player.body.velocity.x > 0) {
           this.handleRotation(1, x + 4, y + 8)
         }
@@ -400,7 +407,7 @@ export class GameScene extends Phaser.Scene {
         if (index === RIGHT) {
           this.handleRotation(1, x, y)
         }
-        if (index === LEFT || (index === TOP_RIGHT && player.body.velocity.x < 0)) {
+        if (index === LEFT) {
           this.handleRotation(-1, x, y)
         }
       },
