@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { SIDE_UP, SIDE_RIGHT, SIDE_DOWN, SIDE_LEFT, TOP_LEFT, TOP, TOP_RIGHT, BOTTOM_RIGHT, BOTTOM_LEFT, LEFT, BOTTOM, RIGHT, START_DOOR, DOWN_SPIKE, UP_SPIKE, LEFT_SPIKE, RIGHT_SPIKE, COLOURS, RED_KEY, BLANK, RED_DOOR_LOCKED, RED_DOOR_ENTRANCE, RED_DOOR_EXIT, YELLOW_KEY, YELLOW_DOOR_LOCKED, YELLOW_DOOR_ENTRANCE, YELLOW_DOOR_EXIT, BLUE_DOOR_EXIT, GREEN_DOOR_EXIT, BLUE_KEY, GREEN_DOOR_LOCKED, GREEN_DOOR_ENTRANCE, BLUE_DOOR_LOCKED, BLUE_DOOR_ENTRANCE, GREEN_KEY, DEAD, ALIVE } from '../constants';
+import { SIDE_UP, SIDE_RIGHT, SIDE_DOWN, SIDE_LEFT, TOP_LEFT, TOP, TOP_RIGHT, BOTTOM_RIGHT, BOTTOM_LEFT, LEFT, BOTTOM, RIGHT, START_DOOR, DOWN_SPIKE, UP_SPIKE, LEFT_SPIKE, RIGHT_SPIKE, COLOURS, RED_KEY, BLANK, RED_DOOR_LOCKED, RED_DOOR_ENTRANCE, RED_DOOR_EXIT, YELLOW_KEY, YELLOW_DOOR_LOCKED, YELLOW_DOOR_ENTRANCE, YELLOW_DOOR_EXIT, BLUE_DOOR_EXIT, GREEN_DOOR_EXIT, BLUE_KEY, GREEN_DOOR_LOCKED, GREEN_DOOR_ENTRANCE, BLUE_DOOR_LOCKED, BLUE_DOOR_ENTRANCE, GREEN_KEY, DEAD, ALIVE, RUN_END } from '../constants';
  
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
@@ -92,7 +92,6 @@ export class GameScene extends Phaser.Scene {
      * Tiles 1 and 0 are the background/ blank tiles.     
      */
     this.groundLayer.setCollisionByExclusion([0, 1]);
-    // this.spikesLayer.setCollisionByExclusion([0, 1]);
     
     /**    
      * The tiles will probably go all the way around the edge of the map to
@@ -112,13 +111,23 @@ export class GameScene extends Phaser.Scene {
     const redDoorExitTile = this.actionsLayer.findByIndex(RED_DOOR_EXIT);
     const blueDoorExitTile = this.actionsLayer.findByIndex(BLUE_DOOR_EXIT);
     const yellowDoorExitTile = this.actionsLayer.findByIndex(YELLOW_DOOR_EXIT);
-    const greenDoorExitTile = this.actionsLayer.findByIndex(GREEN_DOOR_EXIT);
     
     this.checkpoint = startTile;
     
     this.player = this.physics.add.sprite(startTile.pixelX + 8, startTile.pixelY + 5, 'tiles', ALIVE);
     this.player.setOrigin(0.5, 0.5)
     this.player.body.gravity.set(0, this.config.gravity);
+    
+    
+    /**    
+     * Create walking animations    
+     */     
+    this.anims.create({
+      key: 'running',
+      frames: this.anims.generateFrameNumbers('tiles', { start: ALIVE, end: RUN_END }),
+      frameRate: 10,
+      repeat: -1,
+    })
     
     /**    
      * Collide the player with the colidable tiles in the tilemap    
@@ -275,22 +284,22 @@ export class GameScene extends Phaser.Scene {
       this.jump();
     }
     if (this.cursors.left.isDown && !this.cursors.right.isDown) {
+      this.player.anims.play('running', true)
       if (!this.isFlipped) {
         this.moveCounterClockwise();
       } else {
         this.moveClockwise();
       }
       
-    } else {
-      if (this.cursors.right.isDown && !this.cursors.left.isDown) {
-        if (this.isFlipped) {
-          this.moveCounterClockwise();
-        } else {
-          this.moveClockwise();
-        }
+    } else if (this.cursors.right.isDown && !this.cursors.left.isDown) {
+      this.player.anims.play('running', true)
+      if (this.isFlipped) {
+        this.moveCounterClockwise();
       } else {
-        this.stopMoving()
+        this.moveClockwise();
       }
+    } else {
+      this.stopMoving()
     }
   }
   
@@ -333,6 +342,7 @@ export class GameScene extends Phaser.Scene {
   }
   
   private stopMoving() {
+    this.player.anims.stop();
     const directions = [
       () => {
         this.player.setVelocity(0, this.player.body.velocity.y);

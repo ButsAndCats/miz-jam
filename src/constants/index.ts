@@ -23,7 +23,8 @@ export const SIDE_DOWN = 2;
 export const SIDE_LEFT = 3
 
 export const DEAD = 407;
-export const ALIVE = 403;
+export const ALIVE = 402;
+export const RUN_END = 406;
 
 export const TOP_LEFT = 19;
 export const TOP = 20;
