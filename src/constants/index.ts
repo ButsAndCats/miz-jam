@@ -1,15 +1,19 @@
 export const COLOURS = {
   white: {
-    string: '#ffffff',
-    number: 0xffffff
+    string: '#CFC6B8',
+    number: 0xCFC6B8
   },
   darkGray: {
-    string: '#222222',
-    number: 0x222222,
+    string: '#000000',
+    number: 0x000000,
   },
   maroon: {
     string: '#4b2a3c',
     number: 0x4B2A3C,
+  },
+  green: {
+    string: '#38D973',
+    number: 0x38D973,
   }
 }
 
@@ -18,6 +22,8 @@ export const SIDE_RIGHT = 1;
 export const SIDE_DOWN = 2;
 export const SIDE_LEFT = 3
 
+export const DEAD = 407;
+export const ALIVE = 403;
 
 export const TOP_LEFT = 19;
 export const TOP = 20;

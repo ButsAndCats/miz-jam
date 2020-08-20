@@ -22,6 +22,11 @@ const config: Phaser.Types.Core.GameConfig = {
       // debug: true
     }
   },
+  // callbacks: {
+  //   postBoot: function (game) {
+  //     game.scene.dump();
+  //   }
+  // },
   scene: Scenes,
   parent: 'game',
   backgroundColor: 0x4B2A3C,
