@@ -29,6 +29,6 @@ export class TitleScene extends Phaser.Scene {
   }
   
   private startGame(level: number) {
-    this.scene.launch('Game', { level }).launch('HUD').stop();
+    this.scene.launch('Game', { level }).launch('HUD', { level }).stop();
   }
 }

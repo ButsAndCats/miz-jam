@@ -1,4 +1,5 @@
 import * as Phaser from 'phaser';
+import { Button } from 'game-objects';
 import { COLOURS, BLANK } from 'constants';
 
 const fontStyle = {
@@ -22,9 +23,17 @@ export class HUDScene extends Phaser.Scene {
   timedEvent: Phaser.Time.TimerEvent;
   timer: number;
   completedText: Phaser.GameObjects.Text;
+  level: number;
+  nextLevelButton: Button;
   constructor() {
     super(sceneConfig);
     this.timer = 0;
+  }
+  
+  public init({ level }: {
+    level: number;
+  }) {
+    this.level = level;
   }
   
   /**
@@ -32,7 +41,7 @@ export class HUDScene extends Phaser.Scene {
    */
   public create() {
     this.items = []
-    this.map = this.make.tilemap({ key: 'map' });
+    this.map = this.make.tilemap({ key: `map${this.level}` });
     this.tiles = this.map.addTilesetImage('tiles');
     const hudGraphics = this.add.graphics({
       fillStyle: {
@@ -49,11 +58,18 @@ export class HUDScene extends Phaser.Scene {
     hudGraphics.fillRectShape(hudBg)
     this.timeTitle = this.add.text(670, 10, ' time', fontStyle)
     this.timeText = this.add.text(670, 50, '', fontStyle)
-    this.completedText = this.add.text(400, 300, 'level completed!', {
+
+    this.completedText = this.add.text(400, 300, ' level completed!', {
       ...fontStyle,
       fill: COLOURS.green.string,
-      
     }).setOrigin(0.5).setAlpha(0)
+    this.nextLevelButton = new Button(this, 400, 350, ' next level', {
+      fill: COLOURS.white.string,
+      fontFamily: 'kenny1bit',
+      align: 'center',
+    }, {
+      pointerup: () => this.nextLevel(),
+    }).setOrigin(0.5);
     const slot1 = new Phaser.Geom.Rectangle(670, 150, 50, 50)
     const slot2 = new Phaser.Geom.Rectangle(730, 150, 50, 50)
     const slot3 = new Phaser.Geom.Rectangle(670, 210, 50, 50)
@@ -76,14 +92,15 @@ export class HUDScene extends Phaser.Scene {
     ]
     
     this.scene.get('Game').events.on('pickup', (item: number) => {
+      const index = this.items.length;
       this.items.push(item)
-      const index = this.items.length - 1;
       itemSprites[index].setFrame(item - 1)
     });
     
     this.scene.get('Game').events.on('completed', () => {
       this.timedEvent.destroy();
       this.completedText.setAlpha(1);
+      this.add.existing(this.nextLevelButton);
     });
     
     this.timedEvent = this.time.addEvent({ delay: 1000, callback: () => {
@@ -92,6 +109,15 @@ export class HUDScene extends Phaser.Scene {
     }, callbackScope: this, loop: true });
     
     
+  }
+  
+  private nextLevel () {
+    const level = this.level + 1;
+    const gameScene = this.scene.get('Game')
+    gameScene.events.destroy();
+    this.events.destroy()
+    gameScene.scene.restart({ level })
+    // this.scene.restart({ level })
   }
   
 }
