@@ -1,4 +1,5 @@
 import * as Phaser from 'phaser';
+import * as Store from 'store';
 import { Button } from 'game-objects';
 import { COLOURS, BLANK } from 'constants';
 
@@ -101,9 +102,11 @@ export class HUDScene extends Phaser.Scene {
     });
     
     this.scene.get('Game').events.on('completed', () => {
+      Store.set('highestLevel', this.level + 1)
       this.timedEvent.destroy();
       this.completedText.setAlpha(1);
       this.add.existing(this.nextLevelButton);
+      
     });
     
     this.timedEvent = this.time.addEvent({ delay: 1000, callback: () => {
