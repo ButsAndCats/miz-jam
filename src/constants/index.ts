@@ -59,3 +59,6 @@ export const RED_DOOR_ENTRANCE = 441;
 export const GREEN_DOOR_LOCKED = 442;
 export const GREEN_DOOR_EXIT = 443;
 export const GREEN_DOOR_ENTRANCE = 444;
+
+export const CURSOR = 713;
+export const ZERO = 852;

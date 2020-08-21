@@ -40,6 +40,9 @@ export class HUDScene extends Phaser.Scene {
    * create
    */
   public create() {
+    const { ENTER } = Phaser.Input.Keyboard.KeyCodes;
+    const enterKey = this.input.keyboard.addKey(ENTER);
+    
     this.items = []
     this.map = this.make.tilemap({ key: `map${this.level}` });
     this.tiles = this.map.addTilesetImage('tiles');
@@ -63,7 +66,7 @@ export class HUDScene extends Phaser.Scene {
       ...fontStyle,
       fill: COLOURS.green.string,
     }).setOrigin(0.5).setAlpha(0)
-    this.nextLevelButton = new Button(this, 400, 350, ' next level', {
+    this.nextLevelButton = new Button(this, 400, 350, ' next level - hit enter', {
       fill: COLOURS.white.string,
       fontFamily: 'kenny1bit',
       align: 'center',
@@ -108,7 +111,7 @@ export class HUDScene extends Phaser.Scene {
       this.timeText.setText(` ${this.timer}`)
     }, callbackScope: this, loop: true });
     
-    
+    enterKey.on("down", () => this.nextLevel());
   }
   
   private nextLevel () {
