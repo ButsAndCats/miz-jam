@@ -156,7 +156,6 @@ export class GameScene extends Phaser.Scene {
         return false
       }
       this.isDead = true
-      console.log("DEAD")
       player.setFrame(DEAD)
       // revive this player
       this.revive()
@@ -250,8 +249,6 @@ export class GameScene extends Phaser.Scene {
         [BLUE_DOOR_EXIT]: (tile: Phaser.Tilemaps.Tile) => {
           // Find the tile here because it may not exist at the start of the game
           const blueDoorEntranceTile = this.actionsLayer.findByIndex(BLUE_DOOR_ENTRANCE);
-          console.log(BLUE_DOOR_ENTRANCE)
-          console.log(blueDoorEntranceTile)
           this.relocate(blueDoorEntranceTile);
         }
       }
@@ -397,7 +394,6 @@ export class GameScene extends Phaser.Scene {
     
     const directions = [
       () => {
-        console.log(index)
         if (index === TOP_RIGHT && x >= tile.pixelX + 20 && player.body.velocity.x > 0) {
           this.handleRotation(1, x + 4, y + 8)
         }

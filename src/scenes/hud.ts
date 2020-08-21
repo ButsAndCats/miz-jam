@@ -114,10 +114,10 @@ export class HUDScene extends Phaser.Scene {
   private nextLevel () {
     const level = this.level + 1;
     const gameScene = this.scene.get('Game')
-    gameScene.events.destroy();
-    this.events.destroy()
+    gameScene.events.removeListener('pickup');
+    gameScene.events.removeListener('completed');
     gameScene.scene.restart({ level })
-    // this.scene.restart({ level })
+    this.scene.restart({ level })
   }
   
 }
