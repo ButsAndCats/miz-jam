@@ -533,7 +533,7 @@ export class GameScene extends Phaser.Scene {
         this.tweens.add({
           targets: [this.player],
           x: tile.pixelX + 8,
-          y: tile.pixelY + 8,
+          y: tile.pixelY,
           onComplete: () => {
             this.tweens.add({
               targets: [this.player],
