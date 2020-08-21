@@ -26,14 +26,14 @@ export class HUDScene extends Phaser.Scene {
   level: number;
   nextLevelButton: Button;
   constructor() {
-    super(sceneConfig);
-    this.timer = 0;
+    super(sceneConfig);  
   }
   
   public init({ level }: {
     level: number;
   }) {
     this.level = level;
+    this.timer = 0;
   }
   
   /**
