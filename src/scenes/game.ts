@@ -150,7 +150,7 @@ export class GameScene extends Phaser.Scene {
         this.canFlipGravity = true;
       }
     }, () => {
-      return !this.isDead;
+      return !this.isDead && !this.relocating;
     })
     
     this.physics.add.overlap(this.player, this.spikesLayer, (player: GameScene['player'], tile: Phaser.Tilemaps.Tile) => {
@@ -159,7 +159,6 @@ export class GameScene extends Phaser.Scene {
       }
       
       this.player.setVelocity(0, 0)
-      this.player.body.setAllowGravity(false);
       this.player.anims.stop()
       player.setFrame(DEAD)
       this.isDead = true
@@ -518,6 +517,7 @@ export class GameScene extends Phaser.Scene {
   
   private relocate(tile: Phaser.Tilemaps.Tile, callback?: (tile: Phaser.Tilemaps.Tile) => void, callback2?: (tile: Phaser.Tilemaps.Tile) => void) {
     this.relocating = true;
+    this.player.body.setAllowGravity(false);
     this.tweens.add({
       targets: [this.player],
       alpha: {
@@ -533,7 +533,7 @@ export class GameScene extends Phaser.Scene {
         this.tweens.add({
           targets: [this.player],
           x: tile.pixelX + 8,
-          y: tile.pixelY,
+          y: tile.pixelY + 7,
           onComplete: () => {
             this.tweens.add({
               targets: [this.player],
@@ -542,6 +542,7 @@ export class GameScene extends Phaser.Scene {
                 to: 1,
               },
               onComplete: () => {
+                this.player.body.setAllowGravity(true);
                 this.relocating = false;
                 this.checkpoint = tile;
                 if (callback2 && typeof callback2 === 'function') {
@@ -570,7 +571,6 @@ export class GameScene extends Phaser.Scene {
       },
       (tile: Phaser.Tilemaps.Tile) => {
         this.isDead = false;
-        this.player.body.setAllowGravity(true);
       }
     )
   }
