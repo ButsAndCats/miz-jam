@@ -149,16 +149,21 @@ export class GameScene extends Phaser.Scene {
       if (!this.canFlipGravity) {
         this.canFlipGravity = true;
       }
+    }, () => {
+      return !this.isDead;
     })
     
     this.physics.add.overlap(this.player, this.spikesLayer, (player: GameScene['player'], tile: Phaser.Tilemaps.Tile) => {
       if (this.isDead || this.relocating) {
         return false
       }
-      this.isDead = true
+      
+      this.player.setVelocity(0, 0)
+      this.player.body.setAllowGravity(false);
+      this.player.anims.stop()
       player.setFrame(DEAD)
-      // revive this player
-      this.revive()
+      this.isDead = true
+      this.time.delayedCall(1000, this.revive, [], this)
     }, (player, tile) => {
       if (tile.index === 1 || this.isDead || this.relocating) {
         return false
@@ -528,7 +533,7 @@ export class GameScene extends Phaser.Scene {
         this.tweens.add({
           targets: [this.player],
           x: tile.pixelX + 8,
-          y: tile.pixelY,
+          y: tile.pixelY + 8,
           onComplete: () => {
             this.tweens.add({
               targets: [this.player],
@@ -558,21 +563,16 @@ export class GameScene extends Phaser.Scene {
   }
   
   private revive() {
-    this.add.tween({
-      targets: [this.player],
-      duration: 1000,
-      onComplete: () => {
-        this.relocate(
-          this.checkpoint,
-          (tile: Phaser.Tilemaps.Tile) => {
-            this.player.setFrame(ALIVE);
-          },
-          (tile: Phaser.Tilemaps.Tile) => {
-            this.isDead = false;
-          }
-        )
+    this.relocate(
+      this.checkpoint,
+      (tile: Phaser.Tilemaps.Tile) => {
+        this.player.setFrame(ALIVE);
+      },
+      (tile: Phaser.Tilemaps.Tile) => {
+        this.isDead = false;
+        this.player.body.setAllowGravity(true);
       }
-    })  
+    )
   }
   
   private resetFlippage() {
