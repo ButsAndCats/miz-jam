@@ -276,7 +276,7 @@ export class GameScene extends Phaser.Scene {
     /**    
      * set the camera to not go out of the bounds but follow the player, keeping them in the center.    
      */     
-    this.cameras.main.setBounds(0, 0, 800, 600);
+    // this.cameras.main.setBounds(0, 0, 800, 600);
     this.cameras.main.startFollow(this.player);
     this.cameras.main.setZoom(2);
     
