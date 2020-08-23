@@ -5,6 +5,11 @@
  </editorsettings>
  <tileset firstgid="1" name="tiles" tilewidth="16" tileheight="16" tilecount="1056" columns="48" backgroundcolor="#000000">
   <image source="tiles.png" width="768" height="352"/>
+  <tile id="0">
+   <properties>
+    <property name="turn" type="int" value="0"/>
+   </properties>
+  </tile>
  </tileset>
  <layer id="6" name="Background" width="48" height="24" locked="1">
   <data encoding="csv">

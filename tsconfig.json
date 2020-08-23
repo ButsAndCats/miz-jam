@@ -10,9 +10,9 @@
     "sourceMap": true,
     "baseUrl": "./",
     "paths": {
-      "scenes": ["src/scenes"],
-      "game-objects": ["src/game-objects"],
-      "constants": ["src/constants"]
+      "scenes": ["src/scenes/index.ts"],
+      "game-objects": ["src/game-objects/index.ts"],
+      "constants": ["src/constants/index.ts"]
     }
   },
   "include": [

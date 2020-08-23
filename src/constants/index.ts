@@ -41,6 +41,9 @@ export const UP_SPIKE = 23;
 export const DOWN_SPIKE = 25;
 export const LEFT_SPIKE = 74;
 export const RIGHT_SPIKE = 73;
+export const WIZARD = 80;
+export const SPIDER = 269;
+export const SPELL = 557;
 
 export const BLANK = 0;
 export const YELLOW_KEY = 561;
@@ -62,3 +65,5 @@ export const GREEN_DOOR_ENTRANCE = 444;
 
 export const CURSOR = 713;
 export const ZERO = 852;
+
+

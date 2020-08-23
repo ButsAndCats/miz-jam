@@ -1,5 +1,6 @@
 import * as Phaser from 'phaser';
-import { SIDE_UP, SIDE_RIGHT, SIDE_DOWN, SIDE_LEFT, TOP_LEFT, TOP, TOP_RIGHT, BOTTOM_RIGHT, BOTTOM_LEFT, LEFT, BOTTOM, RIGHT, START_DOOR, DOWN_SPIKE, UP_SPIKE, LEFT_SPIKE, RIGHT_SPIKE, COLOURS, RED_KEY, BLANK, RED_DOOR_LOCKED, RED_DOOR_ENTRANCE, RED_DOOR_EXIT, YELLOW_KEY, YELLOW_DOOR_LOCKED, YELLOW_DOOR_ENTRANCE, YELLOW_DOOR_EXIT, BLUE_DOOR_EXIT, GREEN_DOOR_EXIT, BLUE_KEY, GREEN_DOOR_LOCKED, GREEN_DOOR_ENTRANCE, BLUE_DOOR_LOCKED, BLUE_DOOR_ENTRANCE, GREEN_KEY, DEAD, ALIVE, RUN_END } from '../constants';
+import { SIDE_UP, TOP_LEFT, TOP, TOP_RIGHT, BOTTOM_RIGHT, BOTTOM_LEFT, LEFT, BOTTOM, RIGHT, START_DOOR, DOWN_SPIKE, UP_SPIKE, LEFT_SPIKE, RIGHT_SPIKE, COLOURS, RED_KEY, BLANK, RED_DOOR_LOCKED, RED_DOOR_ENTRANCE, RED_DOOR_EXIT, YELLOW_KEY, YELLOW_DOOR_LOCKED, YELLOW_DOOR_ENTRANCE, YELLOW_DOOR_EXIT, BLUE_DOOR_EXIT, GREEN_DOOR_EXIT, BLUE_KEY, GREEN_DOOR_LOCKED, GREEN_DOOR_ENTRANCE, BLUE_DOOR_LOCKED, BLUE_DOOR_ENTRANCE, GREEN_KEY, DEAD, ALIVE, RUN_END, WIZARD, SPIDER } from '../constants';
+import { Wizard, Spider } from 'game-objects';
  
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
@@ -21,7 +22,7 @@ export class GameScene extends Phaser.Scene {
   direction: 0 | 1 | 2 | 3;
   isFlipped: boolean;
   bgLayer: Phaser.Tilemaps.StaticTilemapLayer;
-  spikesLayer: Phaser.Tilemaps.StaticTilemapLayer;
+  spikesLayer: Phaser.Tilemaps.DynamicTilemapLayer;
   isDead: boolean;
   actionsLayer: Phaser.Tilemaps.DynamicTilemapLayer;
   items: any[];
@@ -91,7 +92,7 @@ export class GameScene extends Phaser.Scene {
     this.tiles = this.map.addTilesetImage('tiles');
     this.bgLayer = this.map.createStaticLayer('Background', this.tiles)
     this.groundLayer = this.map.createStaticLayer('Ground', this.tiles)
-    this.spikesLayer = this.map.createStaticLayer('Spikes', this.tiles)
+    this.spikesLayer = this.map.createDynamicLayer('Spikes', this.tiles)
     this.actionsLayer = this.map.createDynamicLayer('Actions', this.tiles)
     
     /**    
@@ -119,10 +120,11 @@ export class GameScene extends Phaser.Scene {
     const blueDoorExitTile = this.actionsLayer.findByIndex(BLUE_DOOR_EXIT);
     const yellowDoorExitTile = this.actionsLayer.findByIndex(YELLOW_DOOR_EXIT);
     
+    
     this.checkpoint = startTile;
     
     this.player = this.physics.add.sprite(startTile.pixelX + 8, startTile.pixelY + 5, 'tiles', ALIVE);
-    this.player.setOrigin(0.5, 0.5)
+    // this.player.setOrigin(0, 0)
     this.player.body.gravity.set(0, this.config.gravity);
     
     /**    
@@ -158,11 +160,7 @@ export class GameScene extends Phaser.Scene {
         return false
       }
       
-      this.player.setVelocity(0, 0)
-      this.player.anims.stop()
-      player.setFrame(DEAD)
-      this.isDead = true
-      this.time.delayedCall(1000, this.revive, [], this)
+      this.killPlayer();
     }, (player, tile) => {
       if (tile.index === 1 || this.isDead || this.relocating) {
         return false
@@ -281,6 +279,25 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, 800, 600);
     this.cameras.main.startFollow(this.player);
     this.cameras.main.setZoom(2);
+    
+    
+    /**    
+     * Create enemies   
+     */     
+    this.spikesLayer.forEachTile((tile: Phaser.Tilemaps.Tile) => {
+      if (tile.index === WIZARD) {
+        this.spikesLayer.putTileAt(BLANK, tile.x, tile.y);
+        const wizard = new Wizard(this, tile.pixelX, tile.pixelY, 'tiles')
+        this.add.existing(wizard)
+      };
+      if (tile.index === SPIDER) {
+        this.spikesLayer.putTileAt(BLANK, tile.x, tile.y);
+        const spider = new Spider(this, tile.pixelX, tile.pixelY, 'tiles')
+        this.add.existing(spider)
+        this.physics.add.existing(spider)
+        spider.setVelocityY(100);
+      }
+    });
   }
   
   public update() {   
@@ -582,6 +599,15 @@ export class GameScene extends Phaser.Scene {
     this.player.setFlipX(false);
     this.player.setFlipY(false);
     this.player.setAngle(0);
+  }
+  
+  public killPlayer() {
+    this.player.setVelocity(0, 0)
+    this.player.body.setAllowGravity(false)
+    this.player.anims.stop()
+    this.player.setFrame(DEAD)
+    this.isDead = true
+    this.time.delayedCall(1000, this.revive, [], this)
   }
 }
 
