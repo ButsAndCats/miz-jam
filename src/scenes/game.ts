@@ -140,7 +140,7 @@ export class GameScene extends Phaser.Scene {
     /**    
      * Collide the player with the colidable tiles in the tilemap    
      */     
-    this.player.setCollideWorldBounds(true);
+    // this.player.setCollideWorldBounds(true);
     this.physics.add.collider(this.player, this.groundLayer, (player: GameScene['player'], tile: Phaser.Tilemaps.Tile) => {
       if (this.isDead || this.relocating) {
         return
@@ -280,8 +280,7 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player);
     this.cameras.main.setZoom(2);
     
-    
-    /**    
+    /**
      * Create enemies   
      */     
     this.spikesLayer.forEachTile((tile: Phaser.Tilemaps.Tile) => {
@@ -325,6 +324,7 @@ export class GameScene extends Phaser.Scene {
     } else {
       this.stopMoving()
     }
+    this.physics.world.wrap(this.player);
   }
   
   private moveCounterClockwise() {
