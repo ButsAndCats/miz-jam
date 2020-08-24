@@ -26,6 +26,7 @@ export class HUDScene extends Phaser.Scene {
   completedText: Phaser.GameObjects.Text;
   level: number;
   nextLevelButton: Button;
+  thankyouText: GameObject | Group;
   constructor() {
     super(sceneConfig);  
   }
@@ -67,6 +68,10 @@ export class HUDScene extends Phaser.Scene {
       ...fontStyle,
       fill: COLOURS.green.string,
     }).setOrigin(0.5).setAlpha(0)
+    this.thankyouText = this.add.text(400, 350, ' thank you for playing my game', {
+      ...fontStyle,
+      fill: COLOURS.green.string,
+    }).setOrigin(0.5).setAlpha(0)
     this.nextLevelButton = new Button(this, 400, 350, ' next level - hit enter', {
       fill: COLOURS.white.string,
       fontFamily: 'kenny1bit',
@@ -105,7 +110,12 @@ export class HUDScene extends Phaser.Scene {
       Store.set('highestLevel', this.level + 1)
       this.timedEvent.destroy();
       this.completedText.setAlpha(1);
-      this.add.existing(this.nextLevelButton);
+      if (this.level === 9) {
+        this.add.existing(this.thankyouText)
+      } else {
+        this.add.existing(this.nextLevelButton);
+      }
+      
       
     });
     
