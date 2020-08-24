@@ -27,7 +27,9 @@ export class Spider extends Phaser.Physics.Arcade.Sprite {
     })
     
     scene.physics.add.overlap(this, scene.player, (spider: Phaser.Physics.Arcade.Sprite, tile: Phaser.Tilemaps.Tile) => {
-      if (scene.isDead || scene.relocating) return;
+      if (scene.isDead || scene.relocating) {
+        return;
+      }
       scene.killPlayer()
     })
   }

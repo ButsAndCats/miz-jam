@@ -62,6 +62,7 @@ export class BootScene extends Phaser.Scene {
     this.load.tilemapTiledJSON('map1', './assets/level1.json');
     this.load.tilemapTiledJSON('map2', './assets/level2.json');
     this.load.tilemapTiledJSON('map3', './assets/level3.json');
+    this.load.tilemapTiledJSON('map4', './assets/level4.json');
     this.load.spritesheet('tiles', './assets/tiles.png', { 
       frameWidth: 16,
       frameHeight: 16,
